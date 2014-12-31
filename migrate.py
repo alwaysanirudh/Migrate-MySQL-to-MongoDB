@@ -12,8 +12,6 @@
 import MySQLdb as mydb  # Import MySQL Libraimport sys, tracebackry
 import pymongo as mondb  # Import MongoDB Library
 import multiprocessing as mp  # Import Multiprocessing
-import itertools as itt  # Import IterTools
-import operator
 
 
 # MySQL Config
@@ -28,9 +26,6 @@ mondb = moncon.db.collection
 
 # Number of threads is 3 times the cpu on the machine i.e. 3 threads per cpu
 threads = 3*mp.cpu_count()
-
-l = range(1, 20)
-perm = list(itt.permutations(l, 3))
 
 
 # Insert Products to MongoDB
@@ -50,11 +45,7 @@ def index(product):
                         'category': {'id': int(product[7]), 'name': product[8],
                                      'parent': int(product[9])},
                         'in_stock': 1,
-                        'is_tagged': 0,
-                        'shop_windows': []
                         }
-            core = 0
-            accent = 0
 
             iProduct['images'] = productImages(product[0], mycon)
 
@@ -68,34 +59,6 @@ def index(product):
             iProduct['prices'] = prices['prices']
 
             iProduct['sale_price'] = prices['prices']['sale']
-
-            iProduct['concept_attributes'] = productCAs(product[0], mycon)
-
-            cas = []
-
-            for ca in iProduct['concept_attributes']:
-                cas.append(ca['id'])
-                if ca['weightage'] is 10:
-                    core = ca['id']
-                elif ca['weightage'] is 5:
-                    accent = ca['id']
-
-            iProduct['color_stories'] = productCSs(product[0], mycon)
-
-            if iProduct['color_stories'] and iProduct['concept_attributes']:
-                iProduct['is_tagged'] = 1
-
-            if iProduct['concept_attributes']:
-                iProduct['shop_windows'] = productSWs(cas, int(product[10]),
-                                                      mycon)
-
-            lev = list(itt.repeat(0, 20))
-            lev[core-1] = 10
-            lev[accent-1] = 5
-            lev = tuple(lev)
-
-            upvcC = upvcCombo(lev)
-            iProduct['upvc'] = upvcC
 
             mondb.insert(iProduct)
 
@@ -191,77 +154,6 @@ def productPrices(id, mycon):
             r['prices'][price[0]] = str(price[1])
             i += 1
         return r
-
-
-# Fetch tagged Attributes
-def productCAs(id, mycon):
-    with mycon:
-
-        cur = mycon.cursor()
-        cur.execute("SELECT ca.concept_attribute_id, ca.weightage \
-                    FROM concept_attribute_product as ca \
-                    WHERE ca.product_id =" + str(id))
-        cas = cur.fetchall()
-        r = []
-        for ca in cas:
-            r.append({'id': int(ca[0]), 'weightage': int(ca[1])})
-        return r
-
-
-# Fetch Tagged Color Sories
-def productCSs(id, mycon):
-    with mycon:
-
-        cur = mycon.cursor()
-        cur.execute("SELECT cs.id, cs.story_name \
-                    FROM color_story_product as csp \
-                    LEFT JOIN color_stories as cs \
-                    ON cs.id = csp.color_story_id \
-                    WHERE csp.product_id =" + str(id))
-        css = cur.fetchall()
-        r = []
-        for cs in css:
-            r.append({'id': int(cs[0]), 'name': cs[1]})
-        return r
-
-
-# Get Shop Windows
-def productSWs(cas, style, mycon):
-    with mycon:
-
-        cur = mycon.cursor()
-        cur.execute("SELECT sw.id,  sw.sw_name, sw.image_path \
-                    FROM shop_windows as sw \
-                    WHERE sw.style_id = " + str(style) + " \
-                    AND sw.attribute_id in " + str(tuple(cas)))
-        sws = cur.fetchall()
-
-        r = []
-        for sw in sws:
-            r.append({'id': int(sw[0]), 'name': sw[1], 'image':  sw[2]})
-        return r
-
-
-# Get UPVC combination
-def upvcCombo(lev):
-    r = {}
-    r = []
-    for p in perm:
-        r.append(upvc(lev, p))
-    return r
-
-
-# Calculate UPVC
-def upvc(lev, l):
-    r = {}
-    f = list(itt.repeat(1, 20))
-    i = 3
-    for x in l:
-        f[x-1] = i*15
-        i = i - 1
-
-    r['-'.join(itt.imap(str, l))] = sum(itt.imap(operator.mul, lev, f))
-    return r
 
 
 # Rectify/Purify Product Attribute 'Size'
