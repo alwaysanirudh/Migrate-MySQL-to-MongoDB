@@ -3,7 +3,7 @@ Migrate-MySQL-to-MongoDB
 
 A Simple python Script to migrate data from MySQL to MongoDB with Mutlithreading
 
-Author: Anirudh Parui (anirudh@ambab.com)                                                                                                                                     
+Author: Anirudh Parui (alwaysanirudh@gmail.com)                                                                                                                                     
 Date: Dec 11, 2014                                                                                                                                                            
 Version: 1.0.1                                                                                                                                                                
 Purpose: Migrate Products from MySQL to Mongo                                                                                                                                 
