@@ -1,7 +1,7 @@
 Migrate-MySQL-to-MongoDB
 ========================
 
-A Simple python Script to migrate data from MySQL to MongoDB with Mutlithreading
+A Simple python Script to migrate data from MySQL to MongoDB with Mutliprocessing
 
 Author: Anirudh Parui (alwaysanirudh@gmail.com)                                                                                                                                     
 Date: Dec 11, 2014                                                                                                                                                            
